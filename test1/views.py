@@ -9,6 +9,7 @@ from django.http import Http404
 import os
 import requests
 import tarfile
+import subprocess
 # Create your views here.
 
 def home(request):
@@ -72,13 +73,24 @@ def download_and_extract_tar(id, download_url, output_dir):
         # Save the downloaded file
         with open(tar_filepath, 'wb') as tar_file:
             tar_file.write(response.content)
+            tar_file.close()
 
         print("========== reached ==========", tar_filepath)
         # Extract the tar.gz file
-        with tarfile.open(tar_filepath, 'r:gz') as tar:
-            tar.extractall(output_dir)
+        # with tarfile.open(tar_filepath, 'r:gz') as archive:
+        #     archive.extractall(path=output_dir)
+        result = subprocess.run(["tar", "-xvf", tar_filepath, "-C", output_dir], stdout=subprocess.PIPE, text=True)
+        print(result.stdout)
+        temp = output_dir+str(id)+'/grader/'
+        result = subprocess.run(["tar", "-xvf", temp+'grader.tar.gz', "-C", temp], stdout=subprocess.PIPE, text=True)
+        for filename in os.listdir(output_dir+str(id)+'/mounts/'):
+            temp = output_dir+str(id)+'/mounts/'
+            if filename.endswith('.tar.gz'):
+                result = subprocess.run(["tar", "-xvf", temp+filename, "-C", temp], stdout=subprocess.PIPE, text=True)
 
-        print(f"Downloaded and extracted '{tar_filename}' to '{output_dir}'")
+
+
+        print(f"Downloaded and extracted '{tar_filepath}' to '{output_dir}'")
     except requests.exceptions.RequestException as e:
         print(f"Error: Failed to download file - {e}")
     except tarfile.TarError as e:

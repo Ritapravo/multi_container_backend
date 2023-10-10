@@ -25,7 +25,7 @@ class LabSerialiser(serializers.ModelSerializer):
     mounts = serializers.SerializerMethodField()
     class Meta:
         model = Lab
-        fields = ('id', 'name', 'dockerCompose', 'created_at', 'mounts')
+        fields = ('id', 'name', 'description', 'dockerCompose', 'created_at', 'mounts')
 
     def get_dockerCompose(self, obj):
         # Define the logic to compute the value of 'extra_field' here
@@ -44,6 +44,7 @@ class LabUploadSerializer(serializers.Serializer):
         child = serializers.FileField(max_length=100000, allow_empty_file = False, use_url = False)
     )
     lab = serializers.CharField(required = True)
+    labDescription = serializers.CharField(required = False)
     mounts = serializers.ListField(
         child = serializers.FileField(max_length=100000, allow_empty_file = False, use_url = False)
     )
@@ -67,8 +68,11 @@ class LabUploadSerializer(serializers.Serializer):
             archive.add(f'public/static/{folder}', arcname=str(folder))
 
     def create(self, validated_data):
+        print("validated data============", validated_data)
+
         temp = validated_data.pop('lab')
-        lab = Lab.objects.create(name=temp)
+        temp2 = validated_data.pop('labDescription')
+        lab = Lab.objects.create(name=temp, description=temp2)
 
         temp = validated_data.pop('dockerCompose')[0]
         dockerCompose = DockerCompose.objects.create(lab = lab, file = temp)
@@ -85,5 +89,5 @@ class LabUploadSerializer(serializers.Serializer):
             mount_obj = Mount.objects.create(lab = lab, file = mount)
             mount_objs.append(mount_obj)
         self.tar(lab.id)
-        print("===================== reached =====================")
-        return {'dockerCompose': {}, 'lab': str(lab.id), 'mounts': {}, 'configFile':{}, 'graderMount':{}}
+        print("===================== posted =====================")
+        return {'dockerCompose': {}, 'lab': str(lab.id), 'mounts': {}, 'configFile':{}, 'graderMount':{}, 'labDescription': str(lab.description)}
