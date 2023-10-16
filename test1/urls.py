@@ -11,6 +11,7 @@ urlpatterns = [
     # Student part
 
     path('attemptLab/<str:pk>/', views.attemptLab.as_view()),
+    path('endLab/<str:pk>/', views.exitLab.as_view()),
 
     # path('admin/', admin.site.urls)
 ]

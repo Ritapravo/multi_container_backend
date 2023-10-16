@@ -60,6 +60,15 @@ class createLab(APIView):
 # ============ Student Part ===============
 
 
+def start_containers(id, lab_path):
+    print("lab_path ==== ", lab_path)
+    start_script_location = "/home/ritpravo/Desktop/MTP/build/start.sh"
+    stop_script_location = "/home/ritpravo/Desktop/MTP/build/stop.sh"
+    subprocess.run(["cp", start_script_location, lab_path+'/'], stdout=subprocess.PIPE, text=True)
+    subprocess.run(["cp", stop_script_location, lab_path+'/'], stdout=subprocess.PIPE, text=True)
+    result1 = subprocess.run(["bash", lab_path+'/start.sh', lab_path+'/docker-compose.yml' ], stdout=subprocess.PIPE, text=True)
+    print (result1)
+
 def download_and_extract_tar(id, download_url, output_dir):
     os.makedirs(output_dir, exist_ok=True)
 
@@ -102,6 +111,7 @@ def download_and_extract_tar(id, download_url, output_dir):
             print(f"Error: Failed to download file - {e}")
         except tarfile.TarError as e:
             print(f"Error: Failed to extract file - {e}")
+    start_containers(id, directory_path)
 
 class attemptLab(APIView):
     def get_object(self, pk):
@@ -118,5 +128,27 @@ class attemptLab(APIView):
 
         download_and_extract_tar(id, download_url, output_dir)
         return Response({"successful"})
+    
+
+class exitLab(APIView):
+    def get_object(self, pk):
+        try:
+            return Lab.objects.get(id=pk)
+        except Lab.DoesNotExist:
+            return Response({"Not found"})
+    def get(self,request, pk=None):
+        try:
+            id = pk
+            base_dir = os.path.expanduser('~/Documents/mlab/')
+            lab_path = os.path.join(base_dir, str(id))
+            stop_script_location = "/home/ritpravo/Desktop/MTP/build/stop.sh"
+            subprocess.run(["cp", stop_script_location, lab_path+'/'], stdout=subprocess.PIPE, text=True)
+            result1 = subprocess.run(["bash", lab_path+'/stop.sh', lab_path+'/docker-compose.yml' ], stdout=subprocess.PIPE, text=True)
+            print (result1)
+            print("exit")
+            return Response({"successful"})
+        except Exception as e:
+            return Response({"Error"})
+            print(e)
         
 
