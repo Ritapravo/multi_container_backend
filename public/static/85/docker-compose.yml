@@ -1,0 +1,36 @@
+version: '3'
+services:
+  server:
+    build:
+      context: .
+      dockerfile: dockerfiles/Dockerfile.server
+    image: socket_image
+    network_mode: bridge
+    container_name: server
+    volumes:
+      - ./mounts/server:/app
+    ports:
+      - "5555:5555"
+
+  client:
+    image: socket_image
+    network_mode: bridge
+    container_name: client
+    volumes:
+      - ./mounts/client:/app
+    depends_on:
+      - server
+
+  # grader:
+  #   build:
+  #     context: ./grader
+  #     dockerfile: Dockerfile
+  #   image: grader_image
+  #   container_name: grader
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - ./grader:/grader
+  #   depends_on:
+  #     - server
+  
+#changed

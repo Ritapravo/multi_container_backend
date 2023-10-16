@@ -1,0 +1,8 @@
+FROM ubuntu:latest
+WORKDIR /app
+RUN apt-get update && \
+    apt-get install -y g++ 
+
+COPY . .
+EXPOSE 5555
+ENTRYPOINT tail -f /dev/null

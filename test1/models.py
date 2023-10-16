@@ -55,3 +55,10 @@ class GraderMount(models.Model):
     lab = models.ForeignKey(Lab, on_delete=models.CASCADE)
     file = models.FileField(upload_to=get_upload_path4)
     created_at = models.DateField(auto_now=True)
+
+def get_upload_path5(instance, filename):
+    return os.path.join(str(instance.lab.id) + "/dockerfiles", filename)
+class Dockerfile(models.Model):
+    lab = models.ForeignKey(Lab, on_delete=models.CASCADE)
+    file = models.FileField(upload_to=get_upload_path5)
+    created_at = models.DateField(auto_now=True)

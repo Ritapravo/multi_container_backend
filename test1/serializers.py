@@ -54,6 +54,9 @@ class LabUploadSerializer(serializers.Serializer):
     graderMount = serializers.ListField(
         child = serializers.FileField(max_length=100000, allow_empty_file = False, use_url = False)
     )
+    dockerfiles = serializers.ListField(
+        child = serializers.FileField(max_length=100000, allow_empty_file = False, use_url = False)
+    )
 
     def zip_files(self, folder):
         shutil.make_archive(f'public/static/zip/{folder}', 'zip', f'public/static/{folder}')
@@ -83,6 +86,12 @@ class LabUploadSerializer(serializers.Serializer):
         temp = validated_data.pop('graderMount')[0]
         graderMount = GraderMount.objects.create(lab = lab, file = temp)
 
+        dockerfiles = validated_data.pop('dockerfiles')
+        dockerfile_objs = []
+        for dockerfile in dockerfiles:
+            dockerfile_obj = Dockerfile.objects.create(lab = lab, file = dockerfile)
+            # dockerfile_objs.append(mount_obj)       
+
         mounts = validated_data.pop('mounts')
         mount_objs = []
         for mount in mounts:
@@ -90,4 +99,4 @@ class LabUploadSerializer(serializers.Serializer):
             mount_objs.append(mount_obj)
         self.tar(lab.id)
         print("===================== posted =====================")
-        return {'dockerCompose': {}, 'lab': str(lab.id), 'mounts': {}, 'configFile':{}, 'graderMount':{}, 'labDescription': str(lab.description)}
+        return {'dockerCompose': {}, 'lab': str(lab.id), 'mounts': {}, 'configFile':{}, 'graderMount':{}, 'labDescription': str(lab.description), 'dockerfiles':{}}
