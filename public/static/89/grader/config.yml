@@ -1,0 +1,44 @@
+NAME : grader
+
+VARS : 
+  DIR : "/grader/"
+  msg : "hello"
+  cont_name : grader
+
+
+EXECUTE :
+  - PRINT "# copying to server..."
+  - RUN server "mkdir -p /server_results"
+  - STORECMD server_ip server "hostname -i"
+  - RUN "server" "g++ /app/SimpleEmailServerPhase1.cpp -o /s1.out" 
+  - RUN -d server "/s1.out 5555 /app/passwd.txt > /server_results/log1.txt"
+
+  - PRINT "..."
+  - SLEEP "0.5"
+  # - PRINT "..."
+  # - SLEEP "0.5"
+
+  - PRINT "# copying to client..."
+  - COPY "/grader/testcase1.txt" "client:/"
+  - COPY "/grader/client_evaluate.sh" "client:/"
+  - RUN "client" "bash /client_evaluate.sh {server_ip}:5555 /testcase1.txt"
+
+  - PRINT "# Collecting results..."
+  - SLEEP 0.5
+
+  - RUN grader "mkdir -p results"
+  - COPY "server:/server_results" "/grader/results/"
+  - COPY "client:/client_results" "/grader/results/"
+  
+  - PRINT ""
+  - PRINT "========== server container log ==========="
+  - PRINT ""
+  - PRINT -f "/grader/results/server_results/log1.txt"
+  - PRINT ""
+  - PRINT "========== client container log ==========="
+  - PRINT ""
+  - PRINT -f "/grader/results/client_results/log1.txt"
+  
+  - PRINT ""
+  # - PRINT "{msg} {cont_name}"
+  # - RUN grader 'echo {msg} from grader {server_ip}'

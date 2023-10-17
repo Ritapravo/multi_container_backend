@@ -145,10 +145,30 @@ class exitLab(APIView):
             subprocess.run(["cp", stop_script_location, lab_path+'/'], stdout=subprocess.PIPE, text=True)
             result1 = subprocess.run(["bash", lab_path+'/stop.sh', lab_path+'/docker-compose.yml' ], stdout=subprocess.PIPE, text=True)
             print (result1)
+            subprocess.run(["docker", 'stop', 'grader' ], stdout=subprocess.PIPE, text=True)
             print("exit")
             return Response({"successful"})
         except Exception as e:
             return Response({"Error"})
             print(e)
-        
 
+# evaluateLab  
+class evaluateLab(APIView):
+    def get_object(self, pk):
+        try:
+            return Lab.objects.get(id=pk)
+        except Lab.DoesNotExist:
+            return Response({"Not found"})
+    def get(self,request, pk=None):
+        try:
+            id = pk
+            base_dir = os.path.expanduser('~/Documents/mlab/')
+            lab_path = os.path.join(base_dir, str(id))
+            graderMount = os.path.join(lab_path, 'grader')
+            # docker run --rm --name grader -v ./grader:/grader -v  /var/run/docker.sock:/var/run/docker.sock grader_image
+            res = subprocess.run(["docker", "run", "--rm", "--name", "grader", "-v", str(graderMount)+ ":/grader","-v", "/var/run/docker.sock:/var/run/docker.sock", "grader_image"], stdout=subprocess.PIPE,stderr=subprocess.PIPE, text=True)
+            print (res)
+            return Response({"result" :res.stdout, "error":res.stderr})
+        except Exception as e:
+            return Response({"Error"})
+            print(e)
